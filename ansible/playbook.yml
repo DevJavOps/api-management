@@ -1,0 +1,25 @@
+- hosts: localhost
+  tasks:
+    - name: Install and configure Kong API Gateway
+      ansible.builtin.yum:
+        name: kong
+        state: present
+
+    - name: Configure Kong API Gateway
+      ansible.builtin.template:
+        src: templates/kong.yml.j2
+        dest: /etc/kong/kong.yml
+
+    - name: Start and enable Kong service
+      ansible.builtin.service:
+        name: kong
+        state: started
+        enabled: yes
+
+    - name: Add a new API to Kong
+      ansible.builtin.shell: |
+        curl -i -X POST --url http://localhost:8001/services/ --data 'name=example-service' --data 'url=http://mockbin.org'
+      register: result
+
+    - debug:
+        var: result.stdout
